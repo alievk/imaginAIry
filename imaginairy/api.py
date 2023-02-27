@@ -182,7 +182,7 @@ def imagine(
                     add_caption=add_caption,
                     persistent_mode=persistent_mode
                 )
-                if not result.is_nsfw:
+                if not result.safety_score.is_filtered:
                     break
                 if attempt < unsafe_retry_count:
                     logger.info("    Image was unsafe, retrying with new seed...")
@@ -534,6 +534,7 @@ def _generate_single_image(
                     img,
                     safety_mode=IMAGINAIRY_SAFETY_MODE,
                 )
+            safety_score.is_filtered = False
             if safety_score.is_filtered:
                 progress_latents.clear()
             if not safety_score.is_filtered:
