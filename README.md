@@ -1,4 +1,6 @@
 # ImaginAIry 🤖🧠
+
+[![Downloads](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1rOvQNs0Cmn_yU1bKWjCOHzGVDgZkaTtO?usp=sharing)
 [![Downloads](https://pepy.tech/badge/imaginairy)](https://pepy.tech/project/imaginairy)
 [![image](https://img.shields.io/pypi/v/imaginairy.svg)](https://pypi.org/project/imaginairy/)
 [![image](https://img.shields.io/badge/license-MIT-green)](https://github.com/brycedrennan/imaginAIry/blob/master/LICENSE/)
@@ -9,76 +11,138 @@ AI imagined images. Pythonic generation of stable diffusion images.
 
 "just works" on Linux and macOS(M1) (and maybe windows?).
 
-## Examples
+
 ```bash
 # on macOS, make sure rust is installed first
 >> pip install imaginairy
->> imagine "a scenic landscape" "a photo of a dog" "photo of a fruit bowl" "portrait photo of a freckled woman"
-# Stable Diffusion 2.1
->> imagine --model SD-2.1 "a forest"
-# Make generation gif
+>> imagine "a scenic landscape" "a photo of a dog" "photo of a fruit bowl" "portrait photo of a freckled woman" "a bluejay"
+# Make an animation showing the generation process
 >> imagine --gif "a flower"
-
 ```
+<p float="left">
+<img src="assets/000019_786355545_PLMS50_PS7.5_a_scenic_landscape.jpg" height="256">
+<img src="assets/000032_337692011_PLMS40_PS7.5_a_photo_of_a_dog.jpg" height="256">
+<img src="assets/000056_293284644_PLMS40_PS7.5_photo_of_a_bowl_of_fruit.jpg" height="256">
+<img src="assets/000078_260972468_PLMS40_PS7.5_portrait_photo_of_a_freckled_woman.jpg" height="256">
+<img src="assets/013986_1_kdpmpp2m59_PS7.5_a_bluejay_[generated].jpg" height="256">
+<img src="assets/009719_942389026_kdpmpp2m15_PS7.5_a_flower.gif" height="256">
+</p>
 
-<details closed>
-<summary>Console Output</summary>
+### Image Structure Control [by ControlNet](https://github.com/lllyasviel/ControlNet)
+Generate images guided by body poses, depth maps, canny edges, hed boundaries, or normal maps.
+
+**Openpose Control**
 
 ```bash
-🤖🧠 received 4 prompt(s) and will repeat them 1 times to create 4 images.
-Loading model onto mps backend...
-Generating 🖼  : "a scenic landscape" 512x512px seed:557988237 prompt-strength:7.5 steps:40 sampler-type:PLMS
-    PLMS Sampler: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 40/40 [00:29<00:00,  1.36it/s]
-    🖼  saved to: ./outputs/000001_557988237_PLMS40_PS7.5_a_scenic_landscape.jpg
-Generating 🖼  : "a photo of a dog" 512x512px seed:277230171 prompt-strength:7.5 steps:40 sampler-type:PLMS
-    PLMS Sampler: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 40/40 [00:28<00:00,  1.41it/s]
-    🖼  saved to: ./outputs/000002_277230171_PLMS40_PS7.5_a_photo_of_a_dog.jpg
-Generating 🖼  : "photo of a fruit bowl" 512x512px seed:639753980 prompt-strength:7.5 steps:40 sampler-type:PLMS
-    PLMS Sampler: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 40/40 [00:28<00:00,  1.40it/s]
-    🖼  saved to: ./outputs/000003_639753980_PLMS40_PS7.5_photo_of_a_fruit_bowl.jpg
-Generating 🖼  : "portrait photo of a freckled woman" 512x512px seed:500686645 prompt-strength:7.5 steps:40 sampler-type:PLMS
-    PLMS Sampler: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 40/40 [00:29<00:00,  1.37it/s]
-    🖼  saved to: ./outputs/000004_500686645_PLMS40_PS7.5_portrait_photo_of_a_freckled_woman.jpg
+imagine --control-image assets/indiana.jpg  --control-mode openpose --caption-text openpose "photo of a polar bear"
+```
+
+<p float="left">
+    <img src="assets/indiana.jpg" height="256">
+    <img src="assets/indiana-pose.jpg" height="256">
+    <img src="assets/indiana-pose-polar-bear.jpg" height="256">
+</p>
+
+**Canny Edge Control**
+
+```bash
+imagine --control-image assets/lena.png  --control-mode canny "photo of a woman with a hat looking at the camera"
+```
+
+<p float="left">
+    <img src="assets/lena.png" height="256">
+    <img src="assets/lena-canny.jpg" height="256">
+    <img src="assets/lena-canny-generated.jpg" height="256">
+</p>
+
+**HED Boundary Control**
+
+```bash
+imagine --control-image dog.jpg  --control-mode hed  "photo of a dalmation"
+```
+
+<p float="left">
+    <img src="assets/000032_337692011_PLMS40_PS7.5_a_photo_of_a_dog.jpg" height="256">
+    <img src="assets/dog-hed-boundary.jpg" height="256">
+    <img src="assets/dog-hed-boundary-dalmation.jpg" height="256">
+</p>
+
+**Depth Map Control**
+
+```bash
+imagine --control-image fancy-living.jpg  --control-mode depth  "a modern living room"
+```
+
+<p float="left">
+    <img src="assets/fancy-living.jpg" height="256">
+    <img src="assets/fancy-living-depth.jpg" height="256">
+    <img src="assets/fancy-living-depth-generated.jpg" height="256">
+</p>
+
+**Normal Map Control**
+
+```bash
+imagine --control-image bird.jpg  --control-mode normal  "a bird"
+```
+
+<p float="left">
+    <img src="assets/013986_1_kdpmpp2m59_PS7.5_a_bluejay_[generated].jpg" height="256">
+    <img src="assets/bird-normal.jpg" height="256">
+    <img src="assets/bird-normal-generated.jpg" height="256">
+</p>
+
+
+###  Instruction based image edits [by InstructPix2Pix](https://github.com/timothybrooks/instruct-pix2pix)
+Just tell imaginairy how to edit the image and it will do it for you!
+<p float="left">
+<img src="assets/scenic_landscape_winter.jpg" height="256">
+<img src="assets/dog_red.jpg" height="256">
+<img src="assets/bowl_of_fruit_strawberries.jpg" height="256">
+<img src="assets/freckled_woman_cyborg.jpg" height="256">
+<img src="assets/014214_51293814_kdpmpp2m30_PS10.0_img2img-1.0_make_the_bird_wear_a_cowboy_hat_[generated].jpg" height="256">
+<img src="assets/flower-make-the-flower-out-of-paper-origami.gif" height="256">
+<img src="assets/girl-pearl-clown-compare.gif" height="256">
+<img src="assets/mona-lisa-headshot-anim.gif" height="256">
+<img src="assets/make-it-night-time.gif" height="256">
+</p>
+
+<details>
+<summary>Click to see shell commands</summary>
+Use prompt strength to control how strong the edit is. For extra control you can combine with prompt-based masking.
+
+```bash
+# enter imaginairy shell
+>> aimg
+🤖🧠> edit scenic_landscape.jpg -p "make it winter" --prompt-strength 20
+🤖🧠> edit dog.jpg -p "make the dog red" --prompt-strength 5
+🤖🧠> edit bowl_of_fruit.jpg -p "replace the fruit with strawberries"
+🤖🧠> edit freckled_woman.jpg -p "make her a cyborg" --prompt-strength 13
+🤖🧠> edit bluebird.jpg -p "make the bird wear a cowboy hat" --prompt-strength 10
+🤖🧠> edit flower.jpg -p "make the flower out of paper origami" --arg-schedule prompt-strength[1:11:0.3]  --steps 25 --compilation-anim gif
+
+# create a comparison gif
+🤖🧠> edit pearl_girl.jpg -p "make her wear clown makeup" --compare-gif
+# create an animation showing the edit with increasing prompt strengths
+🤖🧠> edit mona-lisa.jpg -p "make it a color professional photo headshot" --negative-prompt "old, ugly, blurry" --arg-schedule "prompt-strength[2:8:0.5]" --compilation-anim gif
+🤖🧠> edit gg-bridge.jpg -p "make it night time" --prompt-strength 15  --steps 30 --arg-schedule prompt-strength[1:15:1] --compilation-anim gif
 ```
 </details>
 
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000019_786355545_PLMS50_PS7.5_a_scenic_landscape.jpg" height="256"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000032_337692011_PLMS40_PS7.5_a_photo_of_a_dog.jpg"  height="256"><br>
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000056_293284644_PLMS40_PS7.5_photo_of_a_bowl_of_fruit.jpg" height="256"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000078_260972468_PLMS40_PS7.5_portrait_photo_of_a_freckled_woman.jpg"  height="256"><br>
-<img src="assets/009719_942389026_kdpmpp2m15_PS7.5_a_flower.gif" height="256">
 
 
-###  🎉 Edit Images with Instructions alone! [by InstructPix2Pix](https://github.com/timothybrooks/instruct-pix2pix)
-Just tell imaginairy how to edit the image and it will do it for you!  
-Use prompt strength to control how strong the edit is. For extra control you can combine
-with prompt-based masking.
-
-```bash
->> aimg edit scenic_landscape.jpg "make it winter" --prompt-strength 20
->> aimg edit scenic_landscape.jpg "make it winter" --steps 30 --arg-schedule "prompt_strength[2:25:0.5]" --compilation-anim
->> aimg edit dog.jpg "make the dog red" --prompt-strength 5
->> aimg edit bowl_of_fruit.jpg "replace the fruit with strawberries"
->> aimg edit freckled_woman.jpg "make her a cyborg" --prompt-strength 13
-# create a comparison gif
->> aimg edit pearl_girl.jpg "make her wear clown makeup" --compare-gif
-# create an animation showing the edit with increasing prompt strengths
->> aimg edit mona-lisa.jpg "make it a color professional photo headshot" --negative-prompt "old, ugly, blurry" --arg-schedule "prompt-strength[2:8:0.5]" --compilation-anim gif
-```
-
-
-<img src="assets/scenic_landscape_winter.jpg" height="256"><img src="assets/dog_red.jpg" height="256"><br>
-<img src="assets/bowl_of_fruit_strawberries.jpg" height="256"><img src="assets/freckled_woman_cyborg.jpg" height="256"><br>
-<img src="assets/girl-pearl-clown-compare.gif" height="256"><img src="assets/mona-lisa-headshot-anim.gif" height="256"><br>
-
+### Quick Image Edit Demo
 Want just quickly have some fun? Try `edit-demo` to apply some pre-defined edits.
 ```bash
 >> aimg edit-demo pearl_girl.jpg
->> aimg edit-demo mona-lisa.jpg
->> aimg edit-demo luke.jpg
->> aimg edit-demo spock.jpg
 ```
-<img src="assets/girl_with_a_pearl_earring_suprise.gif" height="256"><img src="assets/mona-lisa-suprise.gif" height="256"><br>
-<img src="assets/luke-suprise.gif" height="256"><img src="assets/spock-suprise.gif" height="256"><br>
-<img src="assets/gg-bridge-suprise.gif" height="256"><img src="assets/shire-suprise.gif" height="256"><br>
+<p float="left">
+<img src="assets/girl_with_a_pearl_earring_suprise.gif" height="256">
+<img src="assets/mona-lisa-suprise.gif" height="256">
+<img src="assets/luke-suprise.gif" height="256">
+<img src="assets/spock-suprise.gif" height="256">
+<img src="assets/gg-bridge-suprise.gif" height="256">
+<img src="assets/shire-suprise.gif" height="256">
+</p>
 
 
 ### Prompt Based Masking  [by clipseg](https://github.com/timojl/clipseg)
@@ -105,7 +169,7 @@ When writing strength modifiers keep in mind that pixel values are between 0 and
     --fix-faces \
     "a modern female president" "a female robot" "a female doctor" "a female firefighter"
 ```
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/mask_examples/pearl000.jpg" height="200">➡️ 
+<img src="assets/mask_examples/pearl000.jpg" height="200">➡️ 
 <img src="assets/mask_examples/pearl_pres.png" height="200">
 <img src="assets/mask_examples/pearl_robot.png" height="200">
 <img src="assets/mask_examples/pearl_doctor.png" height="200">
@@ -120,11 +184,11 @@ When writing strength modifiers keep in mind that pixel values are between 0 and
     --init-image-strength .1 \
     "a bowl of kittens" "a bowl of gold coins" "a bowl of popcorn" "a bowl of spaghetti"
 ```
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000056_293284644_PLMS40_PS7.5_photo_of_a_bowl_of_fruit.jpg" height="200">➡️ 
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/mask_examples/bowl004.jpg" height="200">
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/mask_examples/bowl001.jpg" height="200">
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/mask_examples/bowl002.jpg" height="200">
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/mask_examples/bowl003.jpg" height="200">
+<img src="assets/000056_293284644_PLMS40_PS7.5_photo_of_a_bowl_of_fruit.jpg" height="200">➡️ 
+<img src="assets/mask_examples/bowl004.jpg" height="200">
+<img src="assets/mask_examples/bowl001.jpg" height="200">
+<img src="assets/mask_examples/bowl002.jpg" height="200">
+<img src="assets/mask_examples/bowl003.jpg" height="200">
 
 
 ### Face Enhancement [by CodeFormer](https://github.com/sczhou/CodeFormer)
@@ -139,6 +203,8 @@ When writing strength modifiers keep in mind that pixel values are between 0 and
 ### Upscaling [by RealESRGAN](https://github.com/xinntao/Real-ESRGAN)
 ```bash
 >> imagine "colorful smoke" --steps 40 --upscale
+# upscale an existing image
+>> aimg upscale my-image.jpg
 ```
 <img src="https://github.com/brycedrennan/imaginAIry/raw/master/assets/000206_856637805_PLMS40_PS7.5_colorful_smoke.jpg" height="128"> ➡️ 
 <img src="https://github.com/brycedrennan/imaginAIry/raw/master/assets/000206_856637805_PLMS40_PS7.5_colorful_smoke_upscaled.jpg" height="256"> 
@@ -148,11 +214,11 @@ When writing strength modifiers keep in mind that pixel values are between 0 and
 >> imagine  "gold coins" "a lush forest" "piles of old books" leaves --tile
 ```
 
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000066_801493266_PLMS40_PS7.5_gold_coins.jpg" height="128"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000066_801493266_PLMS40_PS7.5_gold_coins.jpg" height="128"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000066_801493266_PLMS40_PS7.5_gold_coins.jpg" height="128">
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000118_597948545_PLMS40_PS7.5_a_lush_forest.jpg" height="128"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000118_597948545_PLMS40_PS7.5_a_lush_forest.jpg" height="128"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000118_597948545_PLMS40_PS7.5_a_lush_forest.jpg" height="128">
+<img src="assets/000066_801493266_PLMS40_PS7.5_gold_coins.jpg" height="128"><img src="assets/000066_801493266_PLMS40_PS7.5_gold_coins.jpg" height="128"><img src="assets/000066_801493266_PLMS40_PS7.5_gold_coins.jpg" height="128">
+<img src="assets/000118_597948545_PLMS40_PS7.5_a_lush_forest.jpg" height="128"><img src="assets/000118_597948545_PLMS40_PS7.5_a_lush_forest.jpg" height="128"><img src="assets/000118_597948545_PLMS40_PS7.5_a_lush_forest.jpg" height="128">
 <br>
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000075_961095192_PLMS40_PS7.5_piles_of_old_books.jpg" height="128"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000075_961095192_PLMS40_PS7.5_piles_of_old_books.jpg" height="128"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000075_961095192_PLMS40_PS7.5_piles_of_old_books.jpg" height="128">
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000040_527733581_PLMS40_PS7.5_leaves.jpg" height="128"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000040_527733581_PLMS40_PS7.5_leaves.jpg" height="128"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000040_527733581_PLMS40_PS7.5_leaves.jpg" height="128">
+<img src="assets/000075_961095192_PLMS40_PS7.5_piles_of_old_books.jpg" height="128"><img src="assets/000075_961095192_PLMS40_PS7.5_piles_of_old_books.jpg" height="128"><img src="assets/000075_961095192_PLMS40_PS7.5_piles_of_old_books.jpg" height="128">
+<img src="assets/000040_527733581_PLMS40_PS7.5_leaves.jpg" height="128"><img src="assets/000040_527733581_PLMS40_PS7.5_leaves.jpg" height="128"><img src="assets/000040_527733581_PLMS40_PS7.5_leaves.jpg" height="128">
 #### 360 degree images
 ```bash
 imagine --tile-x -w 1024 -h 512 "360 degree equirectangular panorama photograph of the desert"  --upscale
@@ -165,10 +231,11 @@ Use depth maps for amazing "translations" of existing images.
 ```bash
 >> imagine --model SD-2.0-depth --init-image girl_with_a_pearl_earring_large.jpg --init-image-strength 0.05  "professional headshot photo of a woman with a pearl earring" -r 4 -w 1024 -h 1024 --steps 50
 ```
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/tests/data/girl_with_a_pearl_earring.jpg" height="256"> ➡️ 
-<img src="assets/pearl_depth_1.jpg" height="512">
-<img src="assets/pearl_depth_2.jpg" height="512"> 
-<img src="assets/pearl_depth_3.jpg" height="512">
+<p float="left">
+<img src="tests/data/girl_with_a_pearl_earring.jpg" width="256"> ➡️ 
+<img src="assets/pearl_depth_1.jpg" width="256">
+<img src="assets/pearl_depth_2.jpg" width="256">
+</p>
 
 
 ### Outpainting
@@ -177,9 +244,28 @@ Given a starting image, one can generate it's "surroundings".
 
 Example:
 `imagine --init-image pearl-earring.jpg --init-image-strength 0 --outpaint all250,up0,down600 "woman standing"`
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/tests/data/girl_with_a_pearl_earring.jpg" height="256"> ➡️ 
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/tests/expected_output/test_outpainting_outpaint_.png" height="256">
 
+<img src="tests/data/girl_with_a_pearl_earring.jpg" height="256"> ➡️ 
+<img src="tests/expected_output/test_outpainting_outpaint_.png" height="256">
+
+### Work with different generation models
+
+<p float="left">
+    <img src="assets/fairytale-treehouse-sd14.jpg" height="256">
+    <img src="assets/fairytale-treehouse-sd15.jpg" height="256">
+    <img src="assets/fairytale-treehouse-sd20.jpg" height="256">
+    <img src="assets/fairytale-treehouse-sd21.jpg" height="256">
+    <img src="assets/fairytale-treehouse-openjourney-v1.jpg" height="256">
+    <img src="assets/fairytale-treehouse-openjourney-v2.jpg" height="256">
+</p>
+
+<details>
+<summary>Click to see shell command</summary>
+
+```bash
+imagine "valley, fairytale treehouse village covered, , matte painting, highly detailed, dynamic lighting, cinematic, realism, realistic, photo real, sunset, detailed, high contrast, denoised, centered, michael whelan" --steps 60 --seed 1 --arg-schedule model[sd14,sd15,sd20,sd21,openjourney-v1,openjourney-v2] --arg-schedule "caption-text[sd14,sd15,sd20,sd21,openjourney-v1,openjourney-v2]"
+```
+</details>
 
 ### Prompt Expansion
 You can use `{}` to randomly pull values from lists.  A list of values separated by `|` 
@@ -187,21 +273,21 @@ You can use `{}` to randomly pull values from lists.  A list of values separated
  pull from a phrase list of the same name.   Folders containing .txt phraselist files may be specified via
 `--prompt_library_path`. The option may be specified multiple times.  Built-in categories:
     
-      3d-term, adj-architecture, adj-beauty, adj-detailed, adj-emotion, adj-general, adj-horror, animal, art-movement, 
+      3d-term, adj-architecture, adj-beauty, adj-detailed, adj-emotion, adj-general, adj-horror, animal, art-scene, art-movement, 
       art-site, artist, artist-botanical, artist-surreal, aspect-ratio, bird, body-of-water, body-pose, camera-brand,
-      camera-model, color, cosmic-galaxy, cosmic-nebula, cosmic-star, cosmic-term, dinosaur, eyecolor, f-stop, 
+      camera-model, color, cosmic-galaxy, cosmic-nebula, cosmic-star, cosmic-term, desktop-background, dinosaur, eyecolor, f-stop, 
       fantasy-creature, fantasy-setting, fish, flower, focal-length, food, fruit, games, gen-modifier, hair, hd,
       iso-stop, landscape-type, national-park, nationality, neg-weight, noun-beauty, noun-fantasy, noun-general, 
-      noun-horror, occupation, photo-term, pop-culture, pop-location, punk-style, quantity, rpg-item, scenario-desc, 
+      noun-horror, occupation, painting-style, photo-term, pop-culture, pop-location, punk-style, quantity, rpg-item, scenario-desc, 
       skin-color, spaceship, style, tree-species, trippy, world-heritage-site
 
    Examples:
 
    `imagine "a {lime|blue|silver|aqua} colored dog" -r 4 --seed 0` (note that it generates a dog of each color without repetition)
 
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000184_0_plms40_PS7.5_a_silver_colored_dog_[generated].jpg" height="200"><img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000186_0_plms40_PS7.5_a_aqua_colored_dog_[generated].jpg" height="200">
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000210_0_plms40_PS7.5_a_lime_colored_dog_[generated].jpg" height="200">
-<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/master/assets/000211_0_plms40_PS7.5_a_blue_colored_dog_[generated].jpg" height="200">
+<img src="assets/000184_0_plms40_PS7.5_a_silver_colored_dog_[generated].jpg" height="200"><img src="assets/000186_0_plms40_PS7.5_a_aqua_colored_dog_[generated].jpg" height="200">
+<img src="assets/000210_0_plms40_PS7.5_a_lime_colored_dog_[generated].jpg" height="200">
+<img src="assets/000211_0_plms40_PS7.5_a_blue_colored_dog_[generated].jpg" height="200">
 
    `imagine "a {_color_} dog" -r 4 --seed 0` will generate four, different colored dogs. The colors will be pulled from an included 
    phraselist of colors.
@@ -216,21 +302,36 @@ You can use `{}` to randomly pull values from lists.  A list of values separated
 a bowl full of gold bars sitting on a table
 ```
 
-## Features
- 
- - It makes images from text descriptions! 🎉
+### Example Use Cases
+
+```bash
+>> aimg
+# Generate endless 8k art
+🤖🧠> imagine -w 1920 -h 1080 --upscale "{_art-scene_}. {_painting-style_} by {_artist_}" -r 1000 --steps 30 --model sd21v
+
+# generate endless desktop backgrounds 
+🤖🧠> imagine --tile "{_desktop-background_}" -r 100
+
+# convert a folder of images to pencil sketches
+🤖🧠> edit other/images/*.jpg -p "make it a pencil sketch"
+
+# upscale a folder of images
+🤖🧠> upscale my-images/*.jpg
+
+# generate kitchen remodel ideas
+🤖🧠> imagine --control-image kitchen.jpg -w 1024 -h 1024 "{_interior-style_} kitchen" --control-mode depth -r 100 --init-image 0.01 --upscale --steps 35 --caption-text "{prompt}"
+```
+
+### Additional Features
  - Generate images either in code or from command line.
- - It just works. Proper requirements are installed. model weights are automatically downloaded. No huggingface account needed. 
+ - It just works. Proper requirements are installed. Model weights are automatically downloaded. No huggingface account needed. 
     (if you have the right hardware... and aren't on windows)
- - No more distorted faces!
  - Noisy logs are gone (which was surprisingly hard to accomplish)
  - WeightedPrompts let you smash together separate prompts (cat-dog)
- - Tile Mode creates tileable images
  - Prompt metadata saved into image file metadata
- - Edit images by describing the part you want edited (see example above)
  - Have AI generate captions for images `aimg describe <filename-or-url>`
  - Interactive prompt: just run `aimg`
- - 🎉 finetune your own image model. kind of like dreambooth. Read instructions on ["Concept Training"](docs/concept-training.md) page
+ - finetune your own image model. kind of like dreambooth. Read instructions on ["Concept Training"](docs/concept-training.md) page
 
 ## How To
 
@@ -297,6 +398,47 @@ docker run -it --gpus all -v $HOME/.cache/huggingface:/root/.cache/huggingface -
 
 
 ## ChangeLog
+
+- docs: add some example use cases
+- feature: add art-scene, desktop-background, interior-style, painting-style phraselists
+- fix: compilation animations create normal slideshows instead of "bounces"
+- fix: file globbing works in the interactive shell
+
+**11.0.0**
+- all these changes together mean same seed/sampler will not be guaranteed to produce same image (thus the version bump)
+- fix: image composition didn't work very well. Works well now but probably very slow on non-cuda platforms
+- fix: remove upscaler tiling message
+- fix: improve k-diffusion sampler schedule. significantly improves image quality of default sampler
+- fix: img2img was broken for all samplers except plms and ddim when init image strength was >~0.25
+
+**10.2.0**
+ - feature: input raw control images (a pose, canny map, depth map, etc) directly using `--control-image-raw`
+   This is opposed to current behavior of extracting the control signal from an input image via `--control-image`
+ - feature: `aimg model-list` command lists included models
+ - feature: system memory added to `aimg system-info` command
+ - feature: add `--fix-faces` options to `aimg upscale` command
+ - fix: add missing metadata attributes to generated images
+ - fix: image composition step was producing unnecessarily blurry images 
+ - refactor: split `aimg` cli code into multiple files
+ - docs: pypi docs now link properly to github automatically
+
+**10.1.0**
+- feature: 🎉 ControlNet integration!  Control the structure of generated images.
+- feature: `aimg colorize` attempts to use controlnet to colorize images
+- feature: `--caption-text` command adds text at the bottom left of an image
+
+**10.0.1**
+- fix: `edit` was broken
+
+**10.0.0**
+
+- feature: 🎉🎉 Make large images while retaining composition. Try `imagine "a flower" -w 1920 -h 1080`
+- fix: create compilations directory automatically
+- perf: sliced encoding of images to latents (removes memory bottleneck)
+- perf: use Silu for performance improvement over nonlinearity
+- perf: `xformers` added as a dependency for linux and windows.  Gives a nice speed boost.
+- perf: sliced attention now runs on MacOS. A typo prevented that from happening previously.
+- perf: sliced latent decoding - now possible to make much bigger images. 3310x3310 on 11 GB GPU.
 
 **9.0.2**
 - fix: edit interface was broken
@@ -536,155 +678,4 @@ would be uncorrelated to the rest of the surrounding image.  It created terrible
  - a GUI. this is a python library
  - exploratory features that don't work well
 
-## Todo
 
- - Inference Performance Optimizations
-   - ✅ fp16
-   - ✅ [Doggettx Sliced attention](https://github.com/CompVis/stable-diffusion/compare/main...Doggettx:stable-diffusion:autocast-improvements#)
-   - ✅ xformers support https://www.photoroom.com/tech/stable-diffusion-100-percent-faster-with-memory-efficient-attention/
-   - https://github.com/neonsecret/stable-diffusion  
-   - https://github.com/CompVis/stable-diffusion/pull/177
-   - https://github.com/huggingface/diffusers/pull/532/files
-   - https://github.com/HazyResearch/flash-attention
-   - https://github.com/chavinlo/sda-node
-   
- - Development Environment
-   - ✅ add tests
-   - ✅ set up ci (test/lint/format)
-   - ✅ unified pipeline (txt2img & img2img combined)
-   - ✅ setup parallel testing
-   - add docs
-   - 🚫 remove yaml config
-   - 🚫 delete more unused code
-   - faster latent logging https://discuss.huggingface.co/t/decoding-latents-to-rgb-without-upscaling/23204/9
- - Interface improvements
-   - ✅ init-image at command line
-   - ✅ prompt expansion
-   - ✅ interactive cli
- - Image Generation Features
-   - ✅ add k-diffusion sampling methods
-   - ✅ tiling
-   - ✅ generation videos/gifs
-   - Compositional Visual Generation
-     - https://github.com/energy-based-model/Compositional-Visual-Generation-with-Composable-Diffusion-Models-PyTorch
-     - https://colab.research.google.com/github/energy-based-model/Compositional-Visual-Generation-with-Composable-Diffusion-Models-PyTorch/blob/main/notebooks/demo.ipynb#scrollTo=wt_j3uXZGFAS
-   - ✅ negative prompting
-     - some syntax to allow it in a text string
-   - [paint with words](https://www.reddit.com/r/StableDiffusion/comments/10lzgze/i_figured_out_a_way_to_apply_different_prompts_to/)
-     - https://github.com/cloneofsimo/paint-with-words-sd 
-   - images as actual prompts instead of just init images. 
-     - not directly possible due to model architecture.
-     - can it just be integrated into sampler? 
-     - requires model fine-tuning since SD1.4 expects 77x768 text encoding input
-     - https://twitter.com/Buntworthy/status/1566744186153484288
-     - https://github.com/justinpinkney/stable-diffusion
-     - https://github.com/LambdaLabsML/lambda-diffusers
-     - https://www.reddit.com/r/MachineLearning/comments/x6k5bm/n_stable_diffusion_image_variations_released/
- - Image Editing
-   - ✅outpainting
-     - https://github.com/parlance-zz/g-diffuser-bot/search?q=noise&type=issues
-     - lama cleaner
-   - ✅ inpainting
-     - https://github.com/Jack000/glid-3-xl-stable 
-     - https://github.com/andreas128/RePaint
-     - ✅ img2img but keeps img stable
-     - https://www.reddit.com/r/StableDiffusion/comments/xboy90/a_better_way_of_doing_img2img_by_finding_the/
-     - https://gist.github.com/trygvebw/c71334dd127d537a15e9d59790f7f5e1
-     - https://github.com/pesser/stable-diffusion/commit/bbb52981460707963e2a62160890d7ecbce00e79
-     - https://github.com/SHI-Labs/FcF-Inpainting https://praeclarumjj3.github.io/fcf-inpainting/
-   - ✅ text based image masking
-     - ✅ ClipSeg - https://github.com/timojl/clipseg
-     - https://github.com/facebookresearch/detectron2
-   - Attention Control Methods
-     - https://github.com/bloc97/CrossAttentionControl
-     - https://github.com/ChenWu98/cycle-diffusion
- - Image Enhancement
-   - Photo Restoration - https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life
-   - Upscaling
-     - ✅ realesrgan 
-     - ldm
-     - https://github.com/lowfuel/progrock-stable
-     - gobig
-     - stable super-res?
-       - todo: try with 1-0-0-0 mask at full image resolution (rencoding entire image+predicted image at every step)
-       - todo: use a gaussian pyramid and only include the "high-detail" level of the pyramid into the next step
-       - https://www.reddit.com/r/StableDiffusion/comments/xkjjf9/upscale_to_huge_sizes_and_add_detail_with_sd/
-   - ✅ face enhancers
-     - ✅ gfpgan - https://github.com/TencentARC/GFPGAN
-     - ✅ codeformer - https://github.com/sczhou/CodeFormer
-   - ✅ image describe feature - 
-     - ✅ https://github.com/salesforce/BLIP
-     - 🚫 CLIP brute-force prompt reconstruction
-       - The accuracy of this approach is too low for me to include it in imaginAIry
-       - https://github.com/rmokady/CLIP_prefix_caption
-       - https://github.com/pharmapsychotic/clip-interrogator (blip + clip)
-     - https://github.com/KaiyangZhou/CoOp
-   - 🚫 CPU support.  While the code does actually work on some CPUs, the generation takes so long that I don't think it's
-    worth the effort to support this feature
-   - ✅ img2img for plms
-   - ✅ img2img for kdiff functions
- - Other
-   - Enhancement pipelines
-   - text-to-3d https://dreamfusionpaper.github.io/
-     - https://shihmengli.github.io/3D-Photo-Inpainting/
-     - https://github.com/thygate/stable-diffusion-webui-depthmap-script/discussions/50
-     - Depth estimation
-       - what is SOTA for monocular depth estimation?
-       - https://github.com/compphoto/BoostingMonocularDepth
-   - make a video https://github.com/lucidrains/make-a-video-pytorch
-   - animations
-     - https://github.com/francislabountyjr/stable-diffusion/blob/main/inferencing_notebook.ipynb
-     - https://www.youtube.com/watch?v=E7aAFEhdngI
-     - https://github.com/pytti-tools/frame-interpolation
-   - guided generation 
-     - https://colab.research.google.com/drive/1dlgggNa5Mz8sEAGU0wFCHhGLFooW_pf1#scrollTo=UDeXQKbPTdZI
-     - https://colab.research.google.com/github/aicrumb/doohickey/blob/main/Doohickey_Diffusion.ipynb#scrollTo=PytCwKXCmPid
-     - https://github.com/mlfoundations/open_clip
-     - https://github.com/openai/guided-diffusion
-   - image variations https://github.com/lstein/stable-diffusion/blob/main/VARIATIONS.md
-   - textual inversion 
-     - https://www.reddit.com/r/StableDiffusion/comments/xbwb5y/how_to_run_textual_inversion_locally_train_your/
-     - https://colab.research.google.com/github/huggingface/notebooks/blob/main/diffusers/sd_textual_inversion_training.ipynb#scrollTo=50JuJUM8EG1h
-     - https://colab.research.google.com/github/huggingface/notebooks/blob/main/diffusers/stable_diffusion_textual_inversion_library_navigator.ipynb
-     - https://github.com/Jack000/glid-3-xl-stable
-   - fix saturation at high CFG https://www.reddit.com/r/StableDiffusion/comments/xalo78/fixing_excessive_contrastsaturation_resulting/
-   - https://www.reddit.com/r/StableDiffusion/comments/xbrrgt/a_rundown_of_twenty_new_methodsoptions_added_to/
-   - ✅ deploy to pypi
-   - find similar images https://knn5.laion.ai/?back=https%3A%2F%2Fknn5.laion.ai%2F&index=laion5B&useMclip=false
-   - https://github.com/vicgalle/stable-diffusion-aesthetic-gradients
- - Training
-   - Finetuning "dreambooth" style
-   - [Textual Inversion](https://arxiv.org/abs/2208.01618)
-     - [Fast Textual Inversion](https://github.com/peterwilli/sd-leap-booster) 
-   - [Low-rank Adaptation for Fast Text-to-Image Diffusion Fine-tuning (LORA)](https://github.com/cloneofsimo/lora)
-     - https://huggingface.co/spaces/lora-library/Low-rank-Adaptation 
-   - Performance Improvements
-    - [ColoassalAI](https://github.com/hpcaitech/ColossalAI/tree/main/examples/images/diffusion) - almost got it working but it's not easy enough to install to merit inclusion in imaginairy. We should check back in on this.
-    - Xformers
-    - Deepspeed
-    - 
-
-## Notable Stable Diffusion Implementations
- - https://github.com/ahrm/UnstableFusion
- - https://github.com/AUTOMATIC1111/stable-diffusion-webui
- - https://github.com/blueturtleai/gimp-stable-diffusion
- - https://github.com/hafriedlander/stable-diffusion-grpcserver
- - https://github.com/huggingface/diffusers/tree/main/src/diffusers/pipelines/stable_diffusion
- - https://github.com/lkwq007/stablediffusion-infinity
- - https://github.com/lstein/stable-diffusion
- - https://github.com/parlance-zz/g-diffuser-lib
- - https://github.com/hafriedlander/idea2art
-
-## Online Stable Diffusion Services
- - https://stablecog.com/ 
-
-## Further Reading
- - [Prompt Engineering Handbook](https://openart.ai/promptbook)
- - Differences between samplers
-   - https://www.reddit.com/r/StableDiffusion/comments/xbeyw3/can_anyone_offer_a_little_guidance_on_the/
- - https://www.reddit.com/r/bigsleep/comments/xb5cat/wiskkeys_lists_of_texttoimage_systems_and_related/
- - https://huggingface.co/blog/annotated-diffusion
- - https://github.com/jessevig/bertviz
- - https://www.youtube.com/watch?v=5pIQFQZsNe8
- - https://jalammar.github.io/illustrated-transformer/
- - https://huggingface.co/blog/assets/78_annotated-diffusion/unet_architecture.jpg

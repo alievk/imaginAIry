@@ -15,7 +15,7 @@ model:
     conditioning_key: crossattn
     monitor: val/loss_simple_ema
     scale_factor: 0.18215
-    use_ema: False # we set this to false because this is an inference only config
+    use_ema: False
 
     scheduler_config: # 10000 warm-up steps
       target: imaginairy.lr_scheduler.LambdaLinearScheduler

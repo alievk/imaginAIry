@@ -1,7 +1,9 @@
 # based on https://github.com/isl-org/MiDaS
+from functools import lru_cache
 
 import cv2
 import torch
+from einops import rearrange
 from torch import nn
 from torchvision.transforms import Compose
 
@@ -81,6 +83,7 @@ def load_midas_transform(model_type="dpt_hybrid"):
     return transform
 
 
+@lru_cache(maxsize=1)
 def load_model(model_type):
     # https://github.com/isl-org/MiDaS/blob/master/run.py
     # load network
@@ -151,6 +154,36 @@ def load_model(model_type):
     return model.eval(), transform
 
 
+@lru_cache()
+def midas_device():
+    # mps returns incorrect results ~50% of the time
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+@lru_cache()
+def load_midas(model_type="dpt_hybrid"):
+    model = MiDaSInference(model_type)
+    model.to(midas_device())
+    return model
+
+
+def torch_image_to_depth_map(image_t: torch.Tensor, model_type="dpt_hybrid"):
+    model = load_midas(model_type)
+    transform = load_midas_transform(model_type)
+    image_t = rearrange(image_t, "b c h w -> b h w c")[0]
+    image_np = ((image_t + 1.0) * 0.5).detach().cpu().numpy()
+    image_np = transform({"image": image_np})["image"]
+    image_t = torch.from_numpy(image_np[None, ...])
+    image_t = image_t.to(device=midas_device())
+
+    depth_t = model(image_t)
+    depth_min = torch.amin(depth_t, dim=[1, 2, 3], keepdim=True)
+    depth_max = torch.amax(depth_t, dim=[1, 2, 3], keepdim=True)
+
+    depth_t = (depth_t - depth_min) / (depth_max - depth_min)
+    return depth_t
+
+
 class MiDaSInference(nn.Module):
     MODEL_TYPES_TORCH_HUB = ["DPT_Large", "DPT_Hybrid", "MiDaS_small"]
     MODEL_TYPES_ISL = [
@@ -166,6 +199,7 @@ class MiDaSInference(nn.Module):
         model, _ = load_model(model_type)
         self.model = model
         self.model.train = disabled_train
+        self.model.eval()
 
     def forward(self, x):
         # x in 0..1 as produced by calling self.transform on a 0..1 float64 numpy array

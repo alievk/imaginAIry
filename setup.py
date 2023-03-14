@@ -1,4 +1,6 @@
+import subprocess
 import sys
+from functools import lru_cache
 
 from setuptools import find_packages, setup
 
@@ -8,8 +10,8 @@ if is_for_windows:
     scripts = None
     entry_points = {
         "console_scripts": [
-            "imagine=imaginairy.cmds:imagine_cmd",
-            "aimg=imaginairy.cmds:aimg",
+            "imagine=imaginairy.cli.main:imagine_cmd",
+            "aimg=imaginairy.cli.main:aimg",
         ],
     }
 else:
@@ -17,14 +19,25 @@ else:
     entry_points = None
 
 
+@lru_cache()
+def get_git_revision_hash() -> str:
+    return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+
+
+revision_hash = get_git_revision_hash()
+
 with open("README.md", encoding="utf-8") as f:
     readme = f.read()
+    readme = readme.replace(
+        '<img src="',
+        f'<img src="https://raw.githubusercontent.com/brycedrennan/imaginAIry/{revision_hash}/',
+    )
 
 setup(
     name="imaginAIry",
     author="Bryce Drennan",
     # author_email="b r y p y d o t io",
-    version="9.0.2",
+    version="11.0.0",
     description="AI imagined images. Pythonic generation of stable diffusion images.",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -56,7 +69,7 @@ setup(
         "facexlib",
         "fairscale>=0.4.4",  # for vendored blip
         "ftfy",  # for vendored clip
-        "torch>=1.2.0",
+        "torch>=1.13.1",
         "numpy",
         "tqdm",
         "diffusers",
@@ -76,5 +89,6 @@ setup(
         "torchmetrics>=0.6.0",
         "torchvision>=0.13.1",
         "kornia>=0.6",
+        "xformers>=0.0.16; sys_platform!='darwin'",
     ],
 )

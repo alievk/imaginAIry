@@ -79,7 +79,7 @@ class KDiffusionSampler(ImageSampler, ABC):
         batch_size=1,
         mask=None,
         orig_latent=None,
-        initial_latent=None,
+        noise=None,
         t_start=None,
         denoiser_cls=None,
     ):
@@ -88,22 +88,36 @@ class KDiffusionSampler(ImageSampler, ABC):
         #         f"Got {positive_conditioning.shape[0]} conditionings but batch-size is {batch_size}"
         #     )
 
-        if initial_latent is None:
-            initial_latent = torch.randn(shape, device="cpu").to(self.device)
+        if noise is None:
+            noise = torch.randn(shape, device="cpu").to(self.device)
 
-        log_latent(initial_latent, "initial_latent")
+        log_latent(noise, "initial noise")
         if t_start is not None:
             t_start = num_steps - t_start + 1
-
         sigmas = self.cv_denoiser.get_sigmas(num_steps)[t_start:]
+
+        # see https://github.com/crowsonkb/k-diffusion/issues/43#issuecomment-1305195666
+        if self.short_name in (
+            SamplerName.K_DPM_2,
+            SamplerName.K_DPMPP_2M,
+            SamplerName.K_DPM_2_ANCESTRAL,
+        ):
+            sigmas = torch.cat([sigmas[:-2], sigmas[-1:]])
 
         # if our number of steps is zero, just return the initial latent
         if sigmas.nelement() == 0:
             if orig_latent is not None:
                 return orig_latent
-            return initial_latent
+            return noise
 
-        x = initial_latent * sigmas[0]
+        # t_start is none if init image strength set to 0
+        if orig_latent is not None and t_start is not None:
+            noisy_latent = noise * sigmas[0] + orig_latent
+        else:
+            noisy_latent = noise * sigmas[0]
+
+        x = noisy_latent
+
         log_latent(x, "initial_sigma_noised_tensor")
         if denoiser_cls is None:
             denoiser_cls = CFGDenoiser
@@ -111,9 +125,7 @@ class KDiffusionSampler(ImageSampler, ABC):
 
         mask_noise = None
         if mask is not None:
-            mask_noise = torch.randn_like(initial_latent, device="cpu").to(
-                initial_latent.device
-            )
+            mask_noise = torch.randn_like(x, device="cpu").to(x.device)
 
         def callback(data):
             log_latent(data["x"], "noisy_latent")

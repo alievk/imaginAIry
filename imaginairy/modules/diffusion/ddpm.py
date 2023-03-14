@@ -892,7 +892,7 @@ class LatentDiffusion(DDPM):
 
     def get_first_stage_encoding(self, encoder_posterior):
         if isinstance(encoder_posterior, DiagonalGaussianDistribution):
-            z = encoder_posterior.sample()
+            z = encoder_posterior.mode()
         elif isinstance(encoder_posterior, torch.Tensor):
             z = encoder_posterior
         else:
@@ -1020,33 +1020,35 @@ class LatentDiffusion(DDPM):
             )
 
         elif df > 1 and uf == 1:
+            Ly = (h - (kernel_size[0] * df)) // (stride[0] * df) + 1
+            Lx = (w - (kernel_size[1] * df)) // (stride[1] * df) + 1
+
+            unfold_params = {
+                "kernel_size": (kernel_size[0] * df, kernel_size[1] * df),
+                "dilation": 1,
+                "padding": 0,
+                "stride": (stride[0] * df, stride[1] * df),
+            }
+
+            unfold = torch.nn.Unfold(**unfold_params)
+
             fold_params = {
                 "kernel_size": kernel_size,
                 "dilation": 1,
                 "padding": 0,
                 "stride": stride,
             }
-            unfold = torch.nn.Unfold(**fold_params)
-
-            fold_params2 = {
-                "kernel_size": (kernel_size[0] // df, kernel_size[0] // df),
-                "dilation": 1,
-                "padding": 0,
-                "stride": (stride[0] // df, stride[1] // df),
-            }
             fold = torch.nn.Fold(
-                output_size=(x.shape[2] // df, x.shape[3] // df), **fold_params2
+                output_size=(x.shape[2] // df, x.shape[3] // df), **fold_params
             )
 
             weighting = self.get_weighting(
-                kernel_size[0] // df, kernel_size[1] // df, Ly, Lx, x.device
+                kernel_size[0], kernel_size[1], Ly, Lx, x.device
             ).to(x.dtype)
             normalization = fold(weighting).view(
                 1, 1, h // df, w // df
             )  # normalizes the overlap
-            weighting = weighting.view(
-                (1, 1, kernel_size[0] // df, kernel_size[1] // df, Ly * Lx)
-            )
+            weighting = weighting.view((1, 1, kernel_size[0], kernel_size[1], Ly * Lx))
 
         else:
             raise NotImplementedError
@@ -1127,47 +1129,6 @@ class LatentDiffusion(DDPM):
 
     @torch.no_grad()
     def encode_first_stage(self, x):
-        if (
-            hasattr(self, "split_input_params")
-            and self.split_input_params["patch_distributed_vq"]
-        ):
-            ks = self.split_input_params["ks"]  # eg. (128, 128)
-            stride = self.split_input_params["stride"]  # eg. (64, 64)
-            df = self.split_input_params["vqf"]
-            self.split_input_params["original_image_size"] = x.shape[-2:]
-            bs, nc, h, w = x.shape  # noqa
-            if ks[0] > h or ks[1] > w:
-                ks = (min(ks[0], h), min(ks[1], w))
-                logger.info("reducing Kernel")
-
-            if stride[0] > h or stride[1] > w:
-                stride = (min(stride[0], h), min(stride[1], w))
-                logger.info("reducing stride")
-
-            fold, unfold, normalization, weighting = self.get_fold_unfold(
-                x, ks, stride, df=df
-            )
-            z = unfold(x)  # (bn, nc * prod(**ks), L)
-            # Reshape to img shape
-            z = z.view(
-                (z.shape[0], -1, ks[0], ks[1], z.shape[-1])
-            )  # (bn, nc, ks[0], ks[1], L )
-
-            output_list = [
-                self.first_stage_model.encode(z[:, :, :, :, i])
-                for i in range(z.shape[-1])
-            ]
-
-            o = torch.stack(output_list, axis=-1)
-            o = o * weighting
-
-            # Reverse reshape to img shape
-            o = o.view((o.shape[0], -1, o.shape[-1]))  # (bn, nc * ks[0] * ks[1], L)
-            # stitch crops together
-            decoded = fold(o)
-            decoded = decoded / normalization
-            return decoded
-
         return self.first_stage_model.encode(x)
 
     def shared_step(self, batch, **kwargs):
@@ -1201,7 +1162,7 @@ class LatentDiffusion(DDPM):
             )
             cond = {key: cond}
 
-        if hasattr(self, "split_input_params"):
+        if False and hasattr(self, "split_input_params"):  # noqa
             assert len(cond) == 1  # todo can only deal with one conditioning atm
             assert not return_ids
             ks = self.split_input_params["ks"]  # eg. (128, 128)
