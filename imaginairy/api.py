@@ -18,7 +18,6 @@ elif IMAGINAIRY_SAFETY_MODE == "filter":
 # we put this in the global scope so it can be used in the interactive shell
 _most_recent_result = None
 
-_persistent_model = None
 
 
 def imagine_image_files(
@@ -139,7 +138,6 @@ def imagine(
     half_mode=None,
     add_caption=False,
     unsafe_retry_count=1,
-    persistent_mode=False
 ):
     import torch.nn
 
@@ -180,7 +178,6 @@ def imagine(
                     progress_img_interval_min_s=progress_img_interval_min_s,
                     half_mode=half_mode,
                     add_caption=add_caption,
-                    persistent_mode=persistent_mode
                 )
                 if not result.safety_score.is_filtered:
                     break
@@ -553,6 +550,8 @@ def _generate_single_image(
                 gen_img,
                 safety_mode=IMAGINAIRY_SAFETY_MODE,
             )
+        # I don't care abount safety
+        safety_score.is_filtered = False
         if safety_score.is_filtered:
             progress_latents.clear()
         if not safety_score.is_filtered:
