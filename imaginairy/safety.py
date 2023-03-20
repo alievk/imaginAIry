@@ -157,17 +157,17 @@ def create_safety_score(img, safety_mode=SafetyMode.STRICT):
 
     safety_result = safety_checker(clip_input)[0]
 
-    if safety_result.is_special_care_nsfw:
-        img.paste((150, 0, 0), (0, 0, img.size[0], img.size[1]))
-        safety_result.is_filtered = True
-        logger.info(
-            f"    ⚠️🔞️  Filtering NSFW image. nsfw score: {safety_result.nsfw_score}"
-        )
-    elif safety_mode == SafetyMode.STRICT and safety_result.is_nsfw:
-        img.paste((50, 0, 0), (0, 0, img.size[0], img.size[1]))
-        safety_result.is_filtered = True
-        logger.info(
-            f"    ⚠️  Filtering NSFW image. nsfw score: {safety_result.nsfw_score}"
-        )
+    # if safety_result.is_special_care_nsfw:
+    #     img.paste((150, 0, 0), (0, 0, img.size[0], img.size[1]))
+    #     safety_result.is_filtered = True
+    #     logger.info(
+    #         f"    ⚠️🔞️  Filtering NSFW image. nsfw score: {safety_result.nsfw_score}"
+    #     )
+    # elif safety_mode == SafetyMode.STRICT and safety_result.is_nsfw:
+    #     img.paste((50, 0, 0), (0, 0, img.size[0], img.size[1]))
+    #     safety_result.is_filtered = True
+    #     logger.info(
+    #         f"    ⚠️  Filtering NSFW image. nsfw score: {safety_result.nsfw_score}"
+    #     )
 
     return safety_result
